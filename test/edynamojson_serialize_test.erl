@@ -16,8 +16,15 @@ unsupported_field_type_base(Field) ->
     Input = #{<<"test_field">> => Field},
     ?assertException(error, unsupported_field_type, edynamojson:serialize_term(Input)).
 
-invalid_kv_tuple_test() ->
-    Input = #{<<"test_field">> => {<<"FAKE_TYPE">>, <<"V">>}},
+invalid_kv_tuple_test_() ->
+    [?_test(invalid_kv_tuple_base({<<"FAKE_TYPE">>, <<"V">>})),
+     ?_test(invalid_kv_tuple_base({<<"B">>, not_a_binary})),
+     ?_test(invalid_kv_tuple_base({<<"SS">>, not_a_string_set})),
+     ?_test(invalid_kv_tuple_base({<<"NS">>, not_a_num_set})),
+     ?_test(invalid_kv_tuple_base({<<"BS">>, not_a_bin_set}))].
+
+invalid_kv_tuple_base(Tuple) ->
+    Input = #{<<"test_field">> => Tuple},
     ?assertException(error, invalid_kv_tuple, edynamojson:serialize_term(Input)).
 
 invalid_document_type_test_() ->
@@ -28,7 +35,7 @@ invalid_document_type_test_() ->
      ?_test(invalid_document_type_base({1, 2, 3})),
      ?_test(invalid_document_type_base(#dynamo_msg{id = 123, value = 321})),
      ?_test(invalid_document_type_base(<<"str">>)),
-     ?_test(invalid_map_key_type_base("str")),
+     ?_test(invalid_document_type_base("str")),
      ?_test(invalid_document_type_base(123)),
      ?_test(invalid_document_type_base([123])),
      ?_test(invalid_document_type_base(true))].
