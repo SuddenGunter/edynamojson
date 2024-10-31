@@ -63,7 +63,7 @@ Read and deserialization: TBD (not implemented)
 | List   | OK    |
 | Map    | OK    |
 | Boolean    | OK    |
-| String | Treated as Lists of numbers |
+| String | Treated as a Lists of numbers |
 | Tuple | Only for custom fields |
 | Function | - |
 | Atom  | - |
