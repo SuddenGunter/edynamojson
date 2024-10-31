@@ -2,4 +2,8 @@
 
 Erlang DynamoDB JSON serializer/deserializer
 
-## Usage
+## TODO:
+
+- support atom keys with option config
+- table of implemented features and types
+- tests
