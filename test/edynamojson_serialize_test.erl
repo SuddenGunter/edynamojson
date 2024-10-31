@@ -4,21 +4,21 @@
 
 -record(dynamo_msg, {id, value}).
 
-unsupported_type_test_() ->
-    [?_test(unsupported_type_base(fun(X) -> X end)),
-     ?_test(unsupported_type_base(self())),
-     ?_test(unsupported_type_base(atom)),
-     ?_test(unsupported_type_base(make_ref())),
-     ?_test(unsupported_type_base({1, 2, 3})),
-     ?_test(unsupported_type_base(#dynamo_msg{id = 123, value = 321}))].
+unsupported_field_type_test_() ->
+    [?_test(unsupported_field_type_base(fun(X) -> X end)),
+     ?_test(unsupported_field_type_base(self())),
+     ?_test(unsupported_field_type_base(atom)),
+     ?_test(unsupported_field_type_base(make_ref())),
+     ?_test(unsupported_field_type_base({1, 2, 3})),
+     ?_test(unsupported_field_type_base(#dynamo_msg{id = 123, value = 321}))].
 
-unsupported_type_base(Field) ->
+unsupported_field_type_base(Field) ->
     Input = #{<<"test_field">> => Field},
-    ?assertException(error, unsupported_field_type, edynamojson:serialize_document(Input)).
+    ?assertException(error, unsupported_field_type, edynamojson:serialize_term(Input)).
 
 invalid_kv_tuple_test() ->
     Input = #{<<"test_field">> => {<<"FAKE_TYPE">>, <<"V">>}},
-    ?assertException(error, invalid_kv_tuple, edynamojson:serialize_document(Input)).
+    ?assertException(error, invalid_kv_tuple, edynamojson:serialize_term(Input)).
 
 invalid_document_type_test_() ->
     [?_test(invalid_document_type_base(fun(X) -> X end)),
@@ -34,7 +34,7 @@ invalid_document_type_test_() ->
      ?_test(invalid_document_type_base(true))].
 
 invalid_document_type_base(Input) ->
-    ?assertException(error, invalid_document_type, edynamojson:serialize_document(Input)).
+    ?assertException(error, invalid_document_type, edynamojson:serialize_term(Input)).
 
 invalid_map_key_type_test_() ->
     [?_test(invalid_map_key_type_base(fun(X) -> X end)),
@@ -50,4 +50,8 @@ invalid_map_key_type_test_() ->
 
 invalid_map_key_type_base(Key) ->
     Input = #{Key => <<"test_field">>},
-    ?assertException(error, invalid_map_key_type, edynamojson:serialize_document(Input)).
+    ?assertException(error, invalid_map_key_type, edynamojson:serialize_term(Input)).
+
+unknown_type_in_numbers_set_test() ->
+    Input = #{<<"NS">> => {<<"NS">>, [self()]}},
+    ?assertException(error, unknown_type_in_numbers_set, edynamojson:serialize_term(Input)).

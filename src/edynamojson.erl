@@ -2,28 +2,35 @@
 
 -moduledoc("Erlang DynamoDB JSON serializer/deserializer.").
 
--export([serialize_document/1, deserialize_document/1]).
+-export([serialize_term/1, serialize_json/1, deserialize_term/1]).
 
-%% @doc Serialize document into DynamoDB acceptable format. This function
+%% @doc Serialize term into DynamoDB acceptable JSON. See README.md for usage examples.
+%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type | unknown_type_in_numbers_set)
+-spec serialize_json(map()) -> binary().
+serialize_json(Obj) when is_map(Obj) ->
+    Term = serialize_term(Obj),
+    iolist_to_binary(json:encode(Term)).
+
+%% @doc Serialize term into DynamoDB acceptable format. This function
 %% returns an Erlang term, not a JSON binary. See README.md for usage examples.
 %% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type | unknown_type_in_numbers_set)
--spec serialize_document(map()) -> map().
-serialize_document(Obj) when is_map(Obj) ->
+-spec serialize_term(map()) -> map().
+serialize_term(Obj) when is_map(Obj) ->
     ValidKeys = valid_keys(maps:keys(Obj)),
     if ValidKeys ->
            maps:map(fun(_K, V) -> serialize(V) end, Obj);
        true ->
            error(invalid_map_key_type)
     end;
-serialize_document(_Obj) ->
+serialize_term(_Obj) ->
     error(invalid_document_type).
 
 %% @doc Deserialize DynamoDB-style term into readable map. Basically, this is the
-%% opposite of serialize_document.
--spec deserialize_document(map()) -> map().
-deserialize_document(Obj) when is_map(Obj) ->
+%% opposite of serialize_term.
+-spec deserialize_term(map()) -> map().
+deserialize_term(Obj) when is_map(Obj) ->
     deserialize(Obj);
-deserialize_document(_Obj) ->
+deserialize_term(_Obj) ->
     error(invalid_document_type).
 
 serialize(Obj) when is_map(Obj) ->
@@ -53,7 +60,7 @@ serialize({K, V}) when is_binary(K) ->
 serialize(_Obj) ->
     error(unsupported_field_type).
 
-deserialize(Obj) ->
+deserialize(_Obj) ->
     error(not_implemented).
 
 valid_keys([H | T]) when is_binary(H) ->

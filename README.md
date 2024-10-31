@@ -3,9 +3,9 @@
 Erlang DynamoDB JSON serializer/deserializer.
 
 
-This library is primarily designed for use with [aws-beam](https://github.com/aws-beam/aws-erlang/tree/master/src). Since aws-beam automatically handles JSON serialization and deserialization, this library omits those steps and only converts your object into a format compatible with DynamoDB.
+This library is primarily designed for use with [aws-beam](https://github.com/aws-beam/aws-erlang/tree/master/src). Since aws-beam automatically handles JSON serialization and deserialization, this library allows to just convert Erlang term to DynamoDB-styled Erlang term (and back).
 
-If you use another AWS client or make HTTP calls directly, you also need to add the JSON serialization step (see examples).
+Use `serialize_term/1` and `deserialize_term/1` for aws-beam or custom JSON serializers. Use `serialize_json/1` and `deserialize_json/1` for everything else.
 
 ## What?
 
@@ -22,7 +22,8 @@ Model = #{<<"id">> => <<"secret_id">>,
           <<"created_at">> => 123,
           <<"embedded_map">> => #{<<"foo">> => <<"bar">>}},
 
-SerializedModel = edynamojson:serialize(Model),
+% returns term: #{<<"id">>: {<<"S">>: <<"secret_id">>}..}>>
+SerializedModel = edynamojson:serialize_term(Model),
 
 Client = aws_client:make_client(AWSKey, AWSSecKey, AWSReg),
 
@@ -37,11 +38,10 @@ Model = #{<<"id">> => <<"secret_id">>,
           <<"created_at">> => 123,
           <<"embedded_map">> => #{<<"foo">> => <<"bar">>}},
 
-SerializedModel = edynamojson:serialize(Model),
+% returns JSON as binary: <<"{\"id\": { \"S\": \"secret_id\"}..}>>
+SerializedModel = edynamojson:serialize_json(Model),
 
-JSONModel = iolist_to_binary(json:encode(SerializedModel)),
-
-my_dynamodb_client:put_item(JSONModel),
+my_dynamodb_client:put_item(SerializedModel),
 
 ```
 
@@ -49,10 +49,10 @@ Read and deserialization: TBD (not implemented)
 
 ## FAQ
 
-1. Why does serialize returns / deserialize accept only Erlang term instead of JSON?
+1. Why provide `serialize_term/1` / `deserialize_term/1` ?
 
 - the main use case for this library is to be a convenience utility for aws-beam, which already does JSON serialization/deserialization
-- you might want to use some specific JSON library, so I don't want this package to have another dependency
+- you might want to use some specific JSON library, so I don't want this package to have another dependency that you don't need
 
 2. Which Erlang types are supported?
 
@@ -108,5 +108,5 @@ When to use this feature?
 
 ## TODO:
 
-- tests
+- better test coverage
 - deserialization
