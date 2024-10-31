@@ -5,7 +5,7 @@
 -export([serialize_term/1, serialize_json/1, deserialize_term/1]).
 
 %% @doc Serialize term into DynamoDB acceptable JSON. See README.md for usage examples.
-%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type | unknown_type_in_numbers_set)
+%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type )
 -spec serialize_json(map()) -> binary().
 serialize_json(Obj) when is_map(Obj) ->
     Term = serialize_term(Obj),
@@ -13,7 +13,7 @@ serialize_json(Obj) when is_map(Obj) ->
 
 %% @doc Serialize term into DynamoDB acceptable format. This function
 %% returns an Erlang term, not a JSON binary. See README.md for usage examples.
-%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type | unknown_type_in_numbers_set)
+%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type )
 -spec serialize_term(map()) -> map().
 serialize_term(Obj) when is_map(Obj) ->
     ValidKeys = valid_keys(maps:keys(Obj)),
@@ -53,7 +53,18 @@ serialize(Obj) when is_boolean(Obj) ->
 serialize({K, V}) when is_binary(K) ->
     ValidKV = valid_kv(K, V),
     if ValidKV ->
-           #{K => V};
+           case K of
+               <<"NS">> ->
+                   #{K =>
+                         lists:map(fun(X) ->
+                                      if is_number(X) -> list_to_binary(integer_to_list(X));
+                                         is_binary(X) -> X
+                                      end
+                                   end,
+                                   V)};
+               _ ->
+                   #{K => V}
+           end;
        true ->
            error(invalid_kv_tuple)
     end;
@@ -87,13 +98,7 @@ valid_kv(<<"L">>, V) when is_list(V) ->
 valid_kv(<<"SS">>, V) when is_list(V) ->
     lists:all(fun(X) -> is_binary(X) end, V);
 valid_kv(<<"NS">>, V) when is_list(V) ->
-    lists:map(fun(X) ->
-                 if is_number(X) -> list_to_binary(integer_to_list(X));
-                    is_binary(X) -> X;
-                    true -> error(unknown_type_in_numbers_set)
-                 end
-              end,
-              V);
+    lists:all(fun(X) -> is_binary(X) orelse is_number(X) end, V);
 valid_kv(<<"BS">>, V) when is_list(V) ->
     lists:all(fun(X) -> is_binary(X) end, V);
 valid_kv(_K, _V) ->
