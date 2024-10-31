@@ -110,3 +110,5 @@ When to use this feature?
 
 - better test coverage
 - deserialization
+- Elixir examples
+- Gleam examples?
