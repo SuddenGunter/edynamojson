@@ -58,16 +58,20 @@ Read and deserialization: TBD (not implemented)
 
 | Erlang type | Support |
 | -------- | ------- |
-| Binaries | OK     |
-| Numbers    | OK    |
-| Lists    | OK    |
-| Maps    | OK    |
+| Binary | OK     |
+| Number    | OK    |
+| List   | OK    |
+| Map    | OK    |
 | Boolean    | OK    |
-| Tuples | With restrictions (see below) |
-| Atoms  | Unsupported* |
-| Everything else | Untested* |
+| String | Treated as Lists of numbers |
+| Tuple | Only for custom fields |
+| Function | - |
+| Atom  | - |
+| PID | - |
+| Reference | - |
+| Everything else | Untested |
 
-* Atoms are explicitely blocked from being used anywhere in the library, other untested types are as it says - untested. For now library gives no guarantees if you try to do something funny with them.
+Undefined behaviour will happen if you try to use untested types in production. If you really want to do it - test it meticulously.
 
 3. Which DynamoDB types are supported?
 

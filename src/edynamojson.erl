@@ -1,7 +1,13 @@
 -module(edynamojson).
 
+-moduledoc("Erlang DynamoDB JSON serializer/deserializer.").
+
 -export([serialize_document/1, deserialize_document/1]).
 
+%% @doc Serialize document into DynamoDB acceptable format. This function
+%% returns an Erlang term, not a JSON binary. See README.md for usage examples.
+%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type | unknown_type_in_numbers_set)
+-spec serialize_document(map()) -> map().
 serialize_document(Obj) when is_map(Obj) ->
     ValidKeys = valid_keys(maps:keys(Obj)),
     if ValidKeys ->
@@ -12,6 +18,9 @@ serialize_document(Obj) when is_map(Obj) ->
 serialize_document(_Obj) ->
     error(invalid_document_type).
 
+%% @doc Deserialize DynamoDB-style term into readable map. Basically, this is the
+%% opposite of serialize_document.
+-spec deserialize_document(map()) -> map().
 deserialize_document(Obj) when is_map(Obj) ->
     deserialize(Obj);
 deserialize_document(_Obj) ->
@@ -34,7 +43,6 @@ serialize(Obj) when is_number(Obj) ->
     #{<<"N">> => list_to_binary(integer_to_list(Obj))};
 serialize(Obj) when is_boolean(Obj) ->
     #{<<"BOOL">> => Obj};
-% support custom-enforced types like {"NULL", true} or {"B", <<"base64 encoded value">>} etc
 serialize({K, V}) when is_binary(K) ->
     ValidKV = valid_kv(K, V),
     if ValidKV ->
