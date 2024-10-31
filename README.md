@@ -108,7 +108,7 @@ When to use this feature?
 
 ## TODO:
 
-- better test coverage
 - deserialization
+- CI that runs tests + linters
 - Elixir examples
 - Gleam examples?
