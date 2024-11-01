@@ -8,8 +8,8 @@
 %% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type )
 -spec serialize_json(map()) -> binary().
 serialize_json(Term) when is_map(Term) ->
-    Term = serialize_term(Term),
-    iolist_to_binary(json:encode(Term)).
+    T = serialize_term(Term),
+    iolist_to_binary(json:encode(T)).
 
 %% @doc Serialize term into DynamoDB acceptable format. This function
 %% returns an Erlang term, not a JSON binary. See README.md for usage examples.
@@ -51,7 +51,7 @@ serialize(Term) when is_list(Term) ->
 serialize(Term) when is_binary(Term) ->
     #{<<"S">> => Term};
 serialize(Term) when is_number(Term) ->
-    #{<<"N">> => list_to_binary(integer_to_list(Term))};
+    #{<<"N">> => integer_to_binary(Term)};
 serialize(Term) when is_boolean(Term) ->
     #{<<"BOOL">> => Term};
 serialize({K, V}) when is_binary(K) ->
@@ -61,7 +61,7 @@ serialize({K, V}) when is_binary(K) ->
                <<"NS">> ->
                    #{K =>
                          lists:map(fun(X) ->
-                                      if is_number(X) -> list_to_binary(integer_to_list(X));
+                                      if is_number(X) -> integer_to_binary(X);
                                          is_binary(X) -> X
                                       end
                                    end,
@@ -119,14 +119,14 @@ deserialize_field(#{<<"M">> := Map}) ->
     deserialize_layer(Map);
 deserialize_field(#{<<"S">> := Str}) when is_binary(Str) ->
     Str;
-deserialize_field(#{<<"B">> := Str}) when is_binary(Str) ->
-    Str;
-deserialize_field(#{<<"N">> := Num}) when is_number(Num) ->
-    Num;
+deserialize_field(#{<<"N">> := Num}) when is_binary(Num) ->
+    binary_to_integer(Num);
 deserialize_field(#{<<"BOOL">> := Bool}) when is_boolean(Bool) ->
     Bool;
 deserialize_field(#{<<"L">> := List}) when is_list(List) ->
     lists:map(fun(X) -> deserialize_field(X) end, List);
+deserialize_field(#{<<"B">> := Str}) when is_binary(Str) ->
+    {<<"B">>, Str};
 deserialize_field(#{<<"SS">> := List}) when is_list(List) ->
     AllBins = lists:all(fun(X) -> is_binary(X) end, List),
     if AllBins ->
@@ -144,7 +144,7 @@ deserialize_field(#{<<"BS">> := List}) when is_list(List) ->
 deserialize_field(#{<<"NS">> := List}) when is_list(List) ->
     AllBins = lists:all(fun(X) -> is_binary(X) end, List),
     if AllBins ->
-           {<<"NS">>, lists:map(fun(X) -> list_to_integer(binary_to_list(X)) end, List)};
+           {<<"NS">>, lists:map(fun(X) -> binary_to_integer(X) end, List)};
        true ->
            error(invalid_kv_tuple)
     end;

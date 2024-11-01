@@ -83,13 +83,13 @@ serialize_term_test_() ->
      ?_test(serialize_term_base(#{<<"A">> => {<<"NS">>, [<<"123">>]}},
                                 #{<<"A">> => #{<<"NS">> => [<<"123">>]}}))].
 
-serialize_json_base(Input, Output) ->
-    ?assertEqual(Output, edynamojson:serialize_json(Input)).
+serialize_term_base(Input, Output) ->
+    ?assertEqual(Output, edynamojson:serialize_term(Input)).
 
 serialize_json_test_() ->
     [?_test(serialize_json_base(#{}, <<"{}">>)),
      ?_test(serialize_json_base(#{<<"A">> => <<"B">>}, <<"{\"A\":{\"S\":\"B\"}}">>)),
      ?_test(serialize_json_base(#{<<"A">> => 123}, <<"{\"A\":{\"N\":\"123\"}}">>))].
 
-serialize_term_base(Input, Output) ->
-    ?assertEqual(Output, edynamojson:serialize_term(Input)).
+serialize_json_base(Input, Output) ->
+    ?assertEqual(Output, edynamojson:serialize_json(Input)).
