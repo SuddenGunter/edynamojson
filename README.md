@@ -108,8 +108,9 @@ When to use this feature?
 
 ## TODO:
 
-- deserialization
+- deserialization tests
 - CI that runs tests + linters
 - Elixir examples
 - Gleam examples?
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
+- forbid binaries in number sets
