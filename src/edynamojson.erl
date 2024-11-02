@@ -102,7 +102,7 @@ valid_kv(<<"L">>, V) when is_list(V) ->
 valid_kv(<<"SS">>, V) when is_list(V) ->
     lists:all(fun(X) -> is_binary(X) end, V);
 valid_kv(<<"NS">>, V) when is_list(V) ->
-    lists:all(fun(X) -> is_binary(X) orelse is_number(X) end, V);
+    lists:all(fun(X) -> is_number(X) end, V);
 valid_kv(<<"BS">>, V) when is_list(V) ->
     lists:all(fun(X) -> is_binary(X) end, V);
 valid_kv(_K, _V) ->

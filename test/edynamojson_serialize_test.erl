@@ -22,6 +22,7 @@ invalid_kv_tuple_test_() ->
      ?_test(invalid_kv_tuple_base({<<"SS">>, not_a_string_set})),
      ?_test(invalid_kv_tuple_base({<<"NS">>, not_a_num_set})),
      ?_test(invalid_kv_tuple_base({<<"BS">>, not_a_bin_set})),
+     ?_test(invalid_kv_tuple_base({<<"NS">>, [<<"123">>]})),
      ?_test(invalid_kv_tuple_base({<<"NS">>, [self()]}))].
 
 invalid_kv_tuple_base(Tuple) ->
@@ -79,8 +80,6 @@ serialize_term_test_() ->
      ?_test(serialize_term_base(#{<<"A">> => {<<"SS">>, [<<"foo">>]}},
                                 #{<<"A">> => #{<<"SS">> => [<<"foo">>]}})),
      ?_test(serialize_term_base(#{<<"A">> => {<<"NS">>, [123]}},
-                                #{<<"A">> => #{<<"NS">> => [<<"123">>]}})),
-     ?_test(serialize_term_base(#{<<"A">> => {<<"NS">>, [<<"123">>]}},
                                 #{<<"A">> => #{<<"NS">> => [<<"123">>]}}))].
 
 serialize_term_base(Input, Output) ->

@@ -45,7 +45,25 @@ my_dynamodb_client:put_item(SerializedModel),
 
 ```
 
-Read and deserialization: TBD (not implemented)
+Deserialization of data returned by aws-beam:
+
+```erl
+Client = aws_client:make_client(AWSKey, AWSSecKey, AWSReg),
+
+Data =  aws_dynamodb:get_item(Client, #{<<"TableName">> => <<"testdb">>,<<"Key">> => Key}),
+
+Term = edynamojson:deserialize_term(Data),
+
+```
+
+Deserialization of raw dynamoDB JSON:
+
+```erl
+
+% returns #{<<"A">> => <<"B">>}
+Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
+
+```
 
 ## FAQ
 
@@ -108,9 +126,7 @@ When to use this feature?
 
 ## TODO:
 
-- deserialization tests
 - CI that runs tests + linters
-- Elixir examples
-- Gleam examples?
+- Elixir/Gleam examples
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
 - forbid binaries in number sets
