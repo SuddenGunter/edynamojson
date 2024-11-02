@@ -128,3 +128,4 @@ When to use this feature?
 
 - Elixir/Gleam examples
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
+- atoms and tuples support
