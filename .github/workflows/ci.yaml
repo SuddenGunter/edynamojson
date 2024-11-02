@@ -1,0 +1,16 @@
+name: ci
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OTP and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: 27
+          rebar3-version: 3.24.0
+      - run: rebar3 eunit
