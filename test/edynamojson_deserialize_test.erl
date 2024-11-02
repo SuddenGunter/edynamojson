@@ -2,6 +2,8 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
+-record(dynamo_msg, {id, value}).
+
 deserialize_term_test_() ->
     [?_test(deserialize_term_base(#{}, #{})),
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"S">> => <<"B">>}}, #{<<"A">> => <<"B">>})),
@@ -27,11 +29,26 @@ deserialize_term_test_() ->
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"NULL">> => true}}, #{<<"A">> => null})),
      ?_test(deserialize_term_base(#{<<"A">> =>
                                         #{<<"M">> =>
+                                              #{<<"__atom__">> => #{<<"S">> => <<"atom">>}}}},
+                                  #{<<"A">> => atom})),
+     ?_test(deserialize_term_base(#{<<"A">> =>
+                                        #{<<"M">> =>
                                               #{<<"__tuple__">> =>
                                                     #{<<"L">> =>
                                                           [#{<<"S">> => <<"A">>},
                                                            #{<<"S">> => <<"foo">>}]}}}},
-                                  #{<<"A">> => {<<"A">>, <<"foo">>}}))].
+                                  #{<<"A">> => {<<"A">>, <<"foo">>}})),
+     ?_test(deserialize_term_base(#{<<"A">> =>
+                                        #{<<"M">> =>
+                                              #{<<"__tuple__">> =>
+                                                    #{<<"L">> =>
+                                                          [#{<<"M">> =>
+                                                                 #{<<"__atom__">> =>
+                                                                       #{<<"S">> =>
+                                                                             <<"dynamo_msg">>}}},
+                                                           #{<<"N">> => <<"123">>},
+                                                           #{<<"N">> => <<"321">>}]}}}},
+                                  #{<<"A">> => #dynamo_msg{id = 123, value = 321}}))].
 
 deserialize_term_base(Input, Output) ->
     ?assertEqual(Output, edynamojson:deserialize_term(Input)).

@@ -82,15 +82,17 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 | Map    | OK    |
 | Boolean    | OK    |
 | String | Treated as a Lists of numbers |
-| Tuple | OK* |
+| Tuple | OK (as map+list) |
 | Function | - |
-| Atom  | - |
+| Atom  | OK (as map+binary) |
+| Record | OK (as tuple and atom) |
 | PID | - |
 | Reference | - |
 | Everything else | Untested |
 
-Undefined behaviour will happen if you try to use untested types in production. If you really want to do it - test it meticulously.
-*Tuple `{1, 2, 3}` is serialized as `#{<<"M">> => #{<<"__tuple__">> => #{ <<"L">> => [...dynamodb encoded numbers...]}}}`
+- Undefined behaviour will happen if you try to use untested types in production. If you really want to do it - test it meticulously.
+- Tuple `{1, 2, 3}` is serialized as `#{<<"M">> => #{<<"__tuple__">> => #{ <<"L">> => [...dynamodb encoded numbers...]}}}`
+- *Atoms are only allowed as field values*, never as maps keys. Atom `abc` will be serialized as `#{<<"M">> => #{<<"__atom__">> => #{<<"S">> => <<"abc>>}}}`. `null` atom is a special case that allows us to support DynamoDB's NULL type, so it will be serialized as `#{<<"NULL">> => true}`.
 
 3. Which DynamoDB types are supported?
 
@@ -111,5 +113,3 @@ Undefined behaviour will happen if you try to use untested types in production. 
 
 - Elixir/Gleam examples
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
-- atoms support
-- NS, SS, BS support for serialization

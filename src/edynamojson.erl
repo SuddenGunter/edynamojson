@@ -61,6 +61,8 @@ serialize(Term) when is_tuple(Term) ->
     serialize(#{<<"__tuple__">> => tuple_to_list(Term)});
 serialize(null) ->
     #{<<"NULL">> => true};
+serialize(Term) when is_atom(Term) ->
+    serialize(#{<<"__atom__">> => atom_to_binary(Term)});
 serialize(_Term) ->
     error(unsupported_field_type).
 
@@ -74,6 +76,8 @@ valid_keys(_Keys) ->
 deserialize_layer(#{<<"__tuple__">> := #{<<"L">> := List} = ListField})
     when is_list(List) ->
     list_to_tuple(deserialize_field(ListField));
+deserialize_layer(#{<<"__atom__">> := #{<<"S">> := Term}}) when is_binary(Term) ->
+    binary_to_atom(Term);
 deserialize_layer(Term) when is_map(Term) ->
     ValidKeys = valid_keys(maps:keys(Term)),
     if ValidKeys ->
