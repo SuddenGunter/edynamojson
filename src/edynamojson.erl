@@ -26,11 +26,14 @@ serialize_term(_Term) ->
     error(invalid_document_type).
 
 -spec deserialize_json(binary()) -> map().
-deserialize_json(_Term) ->
-    error(not_implemented).
+deserialize_json(Term) ->
+    ParsedTerm = json:decode(Term),
+    deserialize_term(ParsedTerm).
 
 %% @doc Deserialize DynamoDB-style term into readable map. Basically, this is the
-%% opposite of serialize_term.
+%% opposite of serialize_term.  This function returns an Erlang term, not a JSON binary.
+%% See README.md for usage examples.
+%% @throws error(invalid_document_type | invalid_map_key_type | invalid_kv_tuple | unsupported_field_type )
 -spec deserialize_term(map()) -> map().
 deserialize_term(Term) when is_map(Term) ->
     deserialize_layer(Term);
@@ -113,7 +116,7 @@ deserialize_layer(Term) when is_map(Term) ->
            error(invalid_map_key_type)
     end;
 deserialize_layer(_Term) ->
-    error(not_implemented).
+    error(invalid_document_type).
 
 deserialize_field(#{<<"M">> := Map}) ->
     deserialize_layer(Map);
@@ -151,4 +154,4 @@ deserialize_field(#{<<"NS">> := List}) when is_list(List) ->
 deserialize_field(#{<<"NULL">> := true}) ->
     {<<"NULL">>, true};
 deserialize_field(_V) ->
-    error(not_implemented).
+    error(unsupported_field_type).
