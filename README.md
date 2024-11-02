@@ -97,7 +97,7 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 3. Which DynamoDB types are supported?
 
 | DynamoDB type | Serialize | Deserialize |
-| -------- | ------- |
+| -------- | ------- | ------- |
 | S | OK | OK |
 | N | OK | OK |
 | M | OK | OK |
@@ -107,7 +107,7 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 | NS, SS, BS | - | OK |
 | B | - | OK |
 
-*to represent dynamoDB's NULL in erlang we use `null` atom, like say `#{<<"A">> => null}` is serialized into `#{<<"A">> => #{<<"NULL">> => true}}`
+*to represent DynamoDB's NULL in erlang we use `null` atom, like say `#{<<"A">> => null}` is serialized into `#{<<"A">> => #{<<"NULL">> => true}}`
 
 ## TODO:
 
