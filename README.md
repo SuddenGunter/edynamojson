@@ -129,4 +129,3 @@ When to use this feature?
 - CI that runs tests + linters
 - Elixir/Gleam examples
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
-- forbid binaries in number sets
