@@ -82,7 +82,7 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 | Map    | OK    |
 | Boolean    | OK    |
 | String | Treated as a Lists of numbers |
-| Tuple | Only for custom fields |
+| Tuple | OK* |
 | Function | - |
 | Atom  | - |
 | PID | - |
@@ -90,42 +90,26 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 | Everything else | Untested |
 
 Undefined behaviour will happen if you try to use untested types in production. If you really want to do it - test it meticulously.
+*Tuple `{1, 2, 3}` is serialized as `#{<<"M">> => #{<<"__tuple__">> => #{ <<"L">> => [...dynamodb encoded numbers...]}}}`
 
 3. Which DynamoDB types are supported?
 
-| DynamoDB type | Support |
+| DynamoDB type | Serialize | Deserialize |
 | -------- | ------- |
-| S | OK     |
-| N    | OK    |
-| M    | OK    |
-| L    | OK    |
-| BOOL    | OK    |
-| NULL  | Via tuple |
-| NS, SS, BS    | Via tuple |
-| B    | Via tuple |
+| S | OK | OK |
+| N | OK | OK |
+| M | OK | OK |
+| L | OK | OK |
+| BOOL | OK | OK |
+| NULL | OK* | OK* |
+| NS, SS, BS | - | OK |
+| B | - | OK |
 
-## Using tuples for custom fields
-
-You can use two element tuples to pass `{ field_type, field_value }` pair. The library will try to do basic validation and allow your field to pass through without change. 
-
-When to use this feature?
-
-- when you want to use base64 encoded binary fields (the library can't distinguish them from regular binary strings)
-- when you want to use sets (SS, NS, BS). For number sets (NS), numbers can be passed both as binaries or numbers `[<<"1">>, 2]` - they will be converted to binaries when sent to DynamoDB anyway.
-- when you want to use the NULL field. Boolean true is the only acceptable value for this field.
-
-```erl 
-
-#{
-    <<"NullField">> => {<<"NULL">>, true},
-    <<"StringSetField">> => {<<"SS">>, [<<"foo">>, <<"bar">>]},
-    <<"BinaryField">> => { <<"B">>, <<"Zm9vCg==">>}
-}
-
-```
+*to represent dynamoDB's NULL in erlang we use `null` atom, like say `#{<<"A">> => null}` is serialized into `#{<<"A">> => #{<<"NULL">> => true}}`
 
 ## TODO:
 
 - Elixir/Gleam examples
 - benchmarks + optimizations (potentially can remove some validations to improve performance)
-- atoms and tuples support
+- atoms support
+- NS, SS, BS support for serialization

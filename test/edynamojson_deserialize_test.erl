@@ -17,13 +17,21 @@ deserialize_term_test_() ->
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"L">> => [#{<<"N">> => <<"66">>}]}},
                                   #{<<"A">> => "B"})),
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"B">> => <<"Zm9vCg==">>}},
-                                  #{<<"A">> => {<<"B">>, <<"Zm9vCg==">>}})),
+                                  #{<<"A">> => <<"Zm9vCg==">>})),
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"SS">> => [<<"foo">>]}},
-                                  #{<<"A">> => {<<"SS">>, [<<"foo">>]}})),
+                                  #{<<"A">> => [<<"foo">>]})),
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"NS">> => [<<"123">>]}},
-                                  #{<<"A">> => {<<"NS">>, [123]}})),
+                                  #{<<"A">> => [123]})),
      ?_test(deserialize_term_base(#{<<"A">> => #{<<"NS">> => [<<"123">>]}},
-                                  #{<<"A">> => {<<"NS">>, [123]}}))].
+                                  #{<<"A">> => [123]})),
+     ?_test(deserialize_term_base(#{<<"A">> => #{<<"NULL">> => true}}, #{<<"A">> => null})),
+     ?_test(deserialize_term_base(#{<<"A">> =>
+                                        #{<<"M">> =>
+                                              #{<<"__tuple__">> =>
+                                                    #{<<"L">> =>
+                                                          [#{<<"S">> => <<"A">>},
+                                                           #{<<"S">> => <<"foo">>}]}}}},
+                                  #{<<"A">> => {<<"A">>, <<"foo">>}}))].
 
 deserialize_term_base(Input, Output) ->
     ?assertEqual(Output, edynamojson:deserialize_term(Input)).

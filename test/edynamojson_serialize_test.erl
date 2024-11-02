@@ -9,25 +9,11 @@ unsupported_field_type_test_() ->
      ?_test(unsupported_field_type_base(self())),
      ?_test(unsupported_field_type_base(atom)),
      ?_test(unsupported_field_type_base(make_ref())),
-     ?_test(unsupported_field_type_base({1, 2, 3})),
      ?_test(unsupported_field_type_base(#dynamo_msg{id = 123, value = 321}))].
 
 unsupported_field_type_base(Field) ->
     Input = #{<<"test_field">> => Field},
     ?assertException(error, unsupported_field_type, edynamojson:serialize_term(Input)).
-
-invalid_kv_tuple_test_() ->
-    [?_test(invalid_kv_tuple_base({<<"FAKE_TYPE">>, <<"V">>})),
-     ?_test(invalid_kv_tuple_base({<<"B">>, not_a_binary})),
-     ?_test(invalid_kv_tuple_base({<<"SS">>, not_a_string_set})),
-     ?_test(invalid_kv_tuple_base({<<"NS">>, not_a_num_set})),
-     ?_test(invalid_kv_tuple_base({<<"BS">>, not_a_bin_set})),
-     ?_test(invalid_kv_tuple_base({<<"NS">>, [<<"123">>]})),
-     ?_test(invalid_kv_tuple_base({<<"NS">>, [self()]}))].
-
-invalid_kv_tuple_base(Tuple) ->
-    Input = #{<<"test_field">> => Tuple},
-    ?assertException(error, invalid_kv_tuple, edynamojson:serialize_term(Input)).
 
 invalid_document_type_test_() ->
     [?_test(invalid_document_type_base(fun(X) -> X end)),
@@ -75,12 +61,13 @@ serialize_term_test_() ->
                                             [#{<<"N">> => <<"1">>}, #{<<"N">> => <<"2">>}]}})),
      ?_test(serialize_term_base(#{<<"A">> => "B"},
                                 #{<<"A">> => #{<<"L">> => [#{<<"N">> => <<"66">>}]}})),
-     ?_test(serialize_term_base(#{<<"A">> => {<<"B">>, <<"Zm9vCg==">>}},
-                                #{<<"A">> => #{<<"B">> => <<"Zm9vCg==">>}})),
-     ?_test(serialize_term_base(#{<<"A">> => {<<"SS">>, [<<"foo">>]}},
-                                #{<<"A">> => #{<<"SS">> => [<<"foo">>]}})),
-     ?_test(serialize_term_base(#{<<"A">> => {<<"NS">>, [123]}},
-                                #{<<"A">> => #{<<"NS">> => [<<"123">>]}}))].
+     ?_test(serialize_term_base(#{<<"A">> => {<<"A">>, <<"foo">>}},
+                                #{<<"A">> =>
+                                      #{<<"M">> =>
+                                            #{<<"__tuple__">> =>
+                                                  #{<<"L">> =>
+                                                        [#{<<"S">> => <<"A">>},
+                                                         #{<<"S">> => <<"foo">>}]}}}}))].
 
 serialize_term_base(Input, Output) ->
     ?assertEqual(Output, edynamojson:serialize_term(Input)).

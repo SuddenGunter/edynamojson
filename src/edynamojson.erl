@@ -5,7 +5,7 @@
 -export([serialize_term/1, serialize_json/1, deserialize_term/1, deserialize_json/1]).
 
 %% @doc Serialize term into DynamoDB acceptable JSON. See README.md for usage examples.
-%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type )
+%% @throws error(invalid_map_key_type | invalid_document_type | unsupported_field_type )
 -spec serialize_json(map()) -> binary().
 serialize_json(Term) when is_map(Term) ->
     T = serialize_term(Term),
@@ -13,7 +13,7 @@ serialize_json(Term) when is_map(Term) ->
 
 %% @doc Serialize term into DynamoDB acceptable format. This function
 %% returns an Erlang term, not a JSON binary. See README.md for usage examples.
-%% @throws error(invalid_map_key_type | invalid_document_type | invalid_kv_tuple | unsupported_field_type )
+%% @throws error(invalid_map_key_type | invalid_document_type | unsupported_field_type )
 -spec serialize_term(map()) -> map().
 serialize_term(Term) when is_map(Term) ->
     ValidKeys = valid_keys(maps:keys(Term)),
@@ -57,24 +57,10 @@ serialize(Term) when is_number(Term) ->
     #{<<"N">> => integer_to_binary(Term)};
 serialize(Term) when is_boolean(Term) ->
     #{<<"BOOL">> => Term};
-serialize({K, V}) when is_binary(K) ->
-    ValidKV = valid_kv(K, V),
-    if ValidKV ->
-           case K of
-               <<"NS">> ->
-                   #{K =>
-                         lists:map(fun(X) ->
-                                      if is_number(X) -> integer_to_binary(X);
-                                         is_binary(X) -> X
-                                      end
-                                   end,
-                                   V)};
-               _ ->
-                   #{K => V}
-           end;
-       true ->
-           error(invalid_kv_tuple)
-    end;
+serialize(Term) when is_tuple(Term) ->
+    serialize(#{<<"__tuple__">> => tuple_to_list(Term)});
+serialize(null) ->
+    #{<<"NULL">> => true};
 serialize(_Term) ->
     error(unsupported_field_type).
 
@@ -85,29 +71,9 @@ valid_keys([]) ->
 valid_keys(_Keys) ->
     false.
 
-valid_kv(<<"NULL">>, true) ->
-    true;
-valid_kv(<<"S">>, V) when is_binary(V) ->
-    true;
-valid_kv(<<"B">>, V) when is_binary(V) ->
-    true;
-valid_kv(<<"N">>, V) when is_number(V) ->
-    true;
-valid_kv(<<"BOOL">>, V) when is_boolean(V) ->
-    true;
-valid_kv(<<"M">>, V) when is_map(V) ->
-    true;
-valid_kv(<<"L">>, V) when is_list(V) ->
-    true;
-valid_kv(<<"SS">>, V) when is_list(V) ->
-    lists:all(fun(X) -> is_binary(X) end, V);
-valid_kv(<<"NS">>, V) when is_list(V) ->
-    lists:all(fun(X) -> is_number(X) end, V);
-valid_kv(<<"BS">>, V) when is_list(V) ->
-    lists:all(fun(X) -> is_binary(X) end, V);
-valid_kv(_K, _V) ->
-    false.
-
+deserialize_layer(#{<<"__tuple__">> := #{<<"L">> := List} = ListField})
+    when is_list(List) ->
+    list_to_tuple(deserialize_field(ListField));
 deserialize_layer(Term) when is_map(Term) ->
     ValidKeys = valid_keys(maps:keys(Term)),
     if ValidKeys ->
@@ -129,29 +95,29 @@ deserialize_field(#{<<"BOOL">> := Bool}) when is_boolean(Bool) ->
 deserialize_field(#{<<"L">> := List}) when is_list(List) ->
     lists:map(fun(X) -> deserialize_field(X) end, List);
 deserialize_field(#{<<"B">> := Str}) when is_binary(Str) ->
-    {<<"B">>, Str};
+    Str;
 deserialize_field(#{<<"SS">> := List}) when is_list(List) ->
     AllBins = lists:all(fun(X) -> is_binary(X) end, List),
     if AllBins ->
-           {<<"SS">>, List};
+           List;
        true ->
            error(invalid_kv_tuple)
     end;
 deserialize_field(#{<<"BS">> := List}) when is_list(List) ->
     AllBins = lists:all(fun(X) -> is_binary(X) end, List),
     if AllBins ->
-           {<<"BS">>, List};
+           List;
        true ->
            error(invalid_kv_tuple)
     end;
 deserialize_field(#{<<"NS">> := List}) when is_list(List) ->
     AllBins = lists:all(fun(X) -> is_binary(X) end, List),
     if AllBins ->
-           {<<"NS">>, lists:map(fun(X) -> binary_to_integer(X) end, List)};
+           lists:map(fun(X) -> binary_to_integer(X) end, List);
        true ->
            error(invalid_kv_tuple)
     end;
 deserialize_field(#{<<"NULL">> := true}) ->
-    {<<"NULL">>, true};
+    null;
 deserialize_field(_V) ->
     error(unsupported_field_type).
