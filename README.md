@@ -92,7 +92,7 @@ Result = edynamojson:deserialize_json(<<"{\"A\":{\"S\":\"B\"}}">>),
 
 - Undefined behaviour will happen if you try to use untested types in production. If you really want to do it - test it meticulously.
 - Tuple `{1, 2, 3}` is serialized as `#{<<"M">> => #{<<"__tuple__">> => #{ <<"L">> => [...dynamodb encoded numbers...]}}}`
-- *Atoms are only allowed as field values*, never as maps keys. Atom `abc` will be serialized as `#{<<"M">> => #{<<"__atom__">> => #{<<"S">> => <<"abc>>}}}`. `null` atom is a special case that allows us to support DynamoDB's NULL type, so it will be serialized as `#{<<"NULL">> => true}`.
+- **Atoms are only allowed as field values**, never as maps keys. Atom `abc` will be serialized as `#{<<"M">> => #{<<"__atom__">> => #{<<"S">> => <<"abc>>}}}`. `null` atom is a special case that allows us to support DynamoDB's NULL type, so it will be serialized as `#{<<"NULL">> => true}`.
 
 3. Which DynamoDB types are supported?
 
